@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+ <!-- THESE TWO VERSIONS BELOW MUST MATCH!!!! -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.min.js"></script>
+    <script>
+    //  inject the ngRoute dependency in the module.
+    var myApp = angular.module('myApp', ['ngRoute']);
+    //  use the config method to set up routing:
+    myApp.config(function ($routeProvider) {
+      $routeProvider
+        .when('/',{
+            templateUrl: 'partials/players.html'
+        })
+        .when('/teams',{
+            templateUrl: 'partials/teams.html'
+        })
+        .when('/assoc',{
+            templateUrl: 'partials/assoc.html'
+        })
+        .otherwise({
+          redirectTo: '/'
+        });
+    });
+
+    myApp.factory('PlayersFactory', function() {
+      var players = [
+          {name: 'Brian', team: ''},
+          {name: 'Kevin', team: ''},
+          {name: 'Minh', team: ''}
+      ];
+
+      var assocs = [];
+
+      var factory = {};
+
+      factory.getPlayers = function(callback) {
+        callback(players);
+      }
+
+      factory.createPlayer = function(updatedPlayers, callback) {
+        players = updatedPlayers;
+        callback(players);
+      }
+
+      factory.getAssocs = function(callback) {
+        callback(assocs);
+      }
+
+      factory.createAssoc = function(newAssoc, callback) {
+        assocs = newAssoc;
+        callback(assocs);
+      }
+
+      factory.removePlayer = function(player) {
+        players.splice(players.indexOf(player), 1);
+      }
+
+      return factory;
+    })
+
+    //  build the controllers
+    myApp.controller('PlayersController', function ($scope, PlayersFactory) {
+      $scope.players = [];
+
+      PlayersFactory.getPlayers(function (data) {
+        $scope.players = data;
+      })
+
+      $scope.createPlayer = function(player) {
+        $scope.players.push(player);
+        PlayersFactory.createPlayer($scope.players, function (data) {
+          $scope.players = data;
+          $scope.newPlayer = {};
+        })
+      }
+
+      $scope.removePlayer = function(player) {
+        PlayersFactory.removePlayer(player);
+      }
+
+    });
+
+    myApp.factory('TeamsFactory', function() {
+      var teams = [
+          {name: 'San Jose Sharks'},
+          {name: 'Anaheim Ducks'},
+          {name: 'LA Kings'},
+      ];
+
+      var factory = {};
+
+      factory.getTeams = function(callback) {
+        callback(teams);
+      }
+
+      factory.createTeam = function(updatedTeams, callback) {
+        teams = updatedTeams;
+        callback(teams);
+      }
+
+      factory.removeTeam = function(team) {
+        teams.splice(teams.indexOf(team), 1);
+      }
+
+      return factory;
+    })
+
+    myApp.controller('TeamsController', function ($scope, TeamsFactory) {
+      $scope.teams = [];
+
+      TeamsFactory.getTeams(function (data) {
+        $scope.teams = data;
+      })
+
+      $scope.createTeam = function(team) {
+        $scope.teams.push(team);
+        TeamsFactory.createTeam($scope.teams, function (data) {
+          $scope.teams = data;
+          $scope.newTeam = {};
+        })
+      }
+
+      $scope.removeTeam = function(team) {
+        TeamsFactory.removeTeam(team);
+      }
+    });
+
+    myApp.controller('AssocController', function ($scope, PlayersFactory, TeamsFactory) {
+      $scope.players = [];
+      $scope.teams = [];
+      $scope.assocs = [];
+
+      PlayersFactory.getPlayers(function (data) {
+        $scope.players = data;
+      })
+
+      TeamsFactory.getTeams(function (data) {
+        $scope.teams = data;
+      })
+
+      $scope.createAssoc = function(newAssoc) {
+        $scope.assocs.push(newAssoc);
+
+        PlayersFactory.createAssoc($scope.assocs, function (data) {
+          $scope.assocs = data;
+        })
+
+        $scope.newAssoc = {};
+      }
+
+      PlayersFactory.getAssocs(function (data) {
+        $scope.assocs = data;
+      })
+
+      $scope.removeAssoc = function(assoc) {
+        $scope.assocs.splice(assoc, 1);
+      }
+    });
+
+    </script>
+  </head>
+  <body>
+    <div ng-app='myApp'>
+        <a href="#/">Players</a> | <a href="#/teams">Teams</a> | <a href="#/assoc">Associations</a>
+        <div ng-view="">
+        </div>
+    </div>
+  </body>
+</html>
